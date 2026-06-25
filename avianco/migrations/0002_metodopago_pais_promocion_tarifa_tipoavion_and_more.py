@@ -1,0 +1,243 @@
+import django.db.models.deletion
+from django.conf import settings
+from django.db import migrations, models
+
+
+class Migration(migrations.Migration):
+
+    dependencies = [
+        ('vuelos', '0001_initial'),
+        migrations.swappable_dependency(settings.AUTH_USER_MODEL),
+    ]
+
+    operations = [
+        migrations.CreateModel(
+            name='MetodoPago',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('nombre', models.CharField(max_length=100)),
+                ('tipo', models.CharField(choices=[('tarjeta', 'Tarjeta de Crédito/Débito'), ('paypal', 'PayPal'), ('transferencia', 'Transferencia Bancaria'), ('efectivo', 'Efectivo')], max_length=20)),
+                ('activo', models.BooleanField(default=True)),
+            ],
+            options={
+                'verbose_name': 'Método de Pago',
+                'verbose_name_plural': 'Métodos de Pago',
+                'ordering': ['tipo', 'nombre'],
+            },
+        ),
+        migrations.CreateModel(
+            name='Pais',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('nombre', models.CharField(max_length=100, unique=True)),
+                ('codigo', models.CharField(max_length=3, unique=True)),
+                ('bandera', models.URLField(blank=True)),
+            ],
+            options={
+                'verbose_name': 'País',
+                'verbose_name_plural': 'Países',
+                'ordering': ['nombre'],
+            },
+        ),
+        migrations.CreateModel(
+            name='Promocion',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('codigo', models.CharField(max_length=20, unique=True)),
+                ('descripcion', models.TextField()),
+                ('descuento', models.DecimalField(decimal_places=2, max_digits=5)),
+                ('activa', models.BooleanField(default=True)),
+                ('fecha_inicio', models.DateField()),
+                ('fecha_fin', models.DateField()),
+            ],
+            options={
+                'verbose_name': 'Promoción',
+                'verbose_name_plural': 'Promociones',
+                'ordering': ['-fecha_inicio'],
+            },
+        ),
+        migrations.CreateModel(
+            name='Tarifa',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('nombre', models.CharField(max_length=100)),
+                ('clase', models.CharField(choices=[('economica', 'Económica'), ('business', 'Business'), ('primera', 'Primera Clase')], default='economica', max_length=20)),
+                ('descripcion', models.TextField(blank=True)),
+                ('descuento', models.DecimalField(decimal_places=2, default=0, max_digits=5)),
+            ],
+            options={
+                'verbose_name': 'Tarifa',
+                'verbose_name_plural': 'Tarifas',
+                'ordering': ['clase', 'nombre'],
+            },
+        ),
+        migrations.CreateModel(
+            name='TipoAvion',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('nombre', models.CharField(max_length=100, unique=True)),
+                ('fabricante', models.CharField(max_length=100)),
+                ('autonomia_km', models.PositiveIntegerField()),
+                ('descripcion', models.TextField(blank=True)),
+            ],
+            options={
+                'verbose_name': 'Tipo de Avión',
+                'verbose_name_plural': 'Tipos de Avión',
+                'ordering': ['fabricante', 'nombre'],
+            },
+        ),
+        migrations.CreateModel(
+            name='Tripulacion',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('nombre', models.CharField(max_length=150)),
+                ('apellido', models.CharField(max_length=150)),
+                ('rol', models.CharField(choices=[('piloto', 'Piloto'), ('copiloto', 'Copiloto'), ('azafata', 'Azafata'), ('tecnico', 'Técnico')], max_length=20)),
+                ('licencia', models.CharField(max_length=50, unique=True)),
+                ('activo', models.BooleanField(default=True)),
+            ],
+            options={
+                'verbose_name': 'Tripulación',
+                'verbose_name_plural': 'Tripulación',
+                'ordering': ['apellido', 'nombre'],
+            },
+        ),
+        migrations.CreateModel(
+            name='Equipaje',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('tipo', models.CharField(choices=[('cabina', 'Equipaje de Cabina'), ('bodega', 'Equipaje de Bodega'), ('especial', 'Equipaje Especial')], default='cabina', max_length=20)),
+                ('peso_kg', models.DecimalField(decimal_places=2, max_digits=5)),
+                ('descripcion', models.CharField(blank=True, max_length=200)),
+                ('reserva', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='equipajes', to='vuelos.reserva')),
+            ],
+            options={
+                'verbose_name': 'Equipaje',
+                'verbose_name_plural': 'Equipajes',
+                'ordering': ['reserva', 'tipo'],
+            },
+        ),
+        migrations.CreateModel(
+            name='EstadoVuelo',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('estado', models.CharField(max_length=20)),
+                ('descripcion', models.TextField(blank=True)),
+                ('fecha', models.DateTimeField(auto_now_add=True)),
+                ('vuelo', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='historial_estados', to='vuelos.vuelo')),
+            ],
+            options={
+                'verbose_name': 'Estado de Vuelo',
+                'verbose_name_plural': 'Estados de Vuelo',
+                'ordering': ['-fecha'],
+            },
+        ),
+        migrations.CreateModel(
+            name='Notificacion',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('tipo', models.CharField(choices=[('info', 'Información'), ('alerta', 'Alerta'), ('cancelado', 'Cancelación'), ('embarque', 'Embarque')], default='info', max_length=20)),
+                ('titulo', models.CharField(max_length=200)),
+                ('mensaje', models.TextField()),
+                ('leida', models.BooleanField(default=False)),
+                ('fecha', models.DateTimeField(auto_now_add=True)),
+                ('usuario', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='notificaciones', to=settings.AUTH_USER_MODEL)),
+            ],
+            options={
+                'verbose_name': 'Notificación',
+                'verbose_name_plural': 'Notificaciones',
+                'ordering': ['-fecha'],
+            },
+        ),
+        migrations.CreateModel(
+            name='Pago',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('monto', models.DecimalField(decimal_places=2, max_digits=10)),
+                ('estado', models.CharField(choices=[('pendiente', 'Pendiente'), ('completado', 'Completado'), ('fallido', 'Fallido'), ('reembolsado', 'Reembolsado')], default='pendiente', max_length=20)),
+                ('referencia', models.CharField(blank=True, max_length=100)),
+                ('fecha', models.DateTimeField(auto_now_add=True)),
+                ('metodo_pago', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='pagos', to='vuelos.metodopago')),
+                ('reserva', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='pagos', to='vuelos.reserva')),
+            ],
+            options={
+                'verbose_name': 'Pago',
+                'verbose_name_plural': 'Pagos',
+                'ordering': ['-fecha'],
+            },
+        ),
+        migrations.CreateModel(
+            name='Terminal',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('nombre', models.CharField(max_length=50)),
+                ('descripcion', models.TextField(blank=True)),
+                ('aeropuerto', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='terminales', to='vuelos.aeropuerto')),
+            ],
+            options={
+                'verbose_name': 'Terminal',
+                'verbose_name_plural': 'Terminales',
+                'ordering': ['aeropuerto', 'nombre'],
+            },
+        ),
+        migrations.CreateModel(
+            name='Escala',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('orden', models.PositiveIntegerField()),
+                ('llegada', models.DateTimeField()),
+                ('salida', models.DateTimeField()),
+                ('aeropuerto', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='escalas', to='vuelos.aeropuerto')),
+                ('vuelo', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='escalas', to='vuelos.vuelo')),
+            ],
+            options={
+                'verbose_name': 'Escala',
+                'verbose_name_plural': 'Escalas',
+                'ordering': ['vuelo', 'orden'],
+                'unique_together': {('vuelo', 'orden')},
+            },
+        ),
+        migrations.CreateModel(
+            name='Ciudad',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('nombre', models.CharField(max_length=100)),
+                ('pais', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='ciudades', to='vuelos.pais')),
+            ],
+            options={
+                'verbose_name': 'Ciudad',
+                'verbose_name_plural': 'Ciudades',
+                'ordering': ['nombre'],
+                'unique_together': {('nombre', 'pais')},
+            },
+        ),
+        migrations.CreateModel(
+            name='Puerta',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('codigo', models.CharField(max_length=10)),
+                ('activa', models.BooleanField(default=True)),
+                ('terminal', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='puertas', to='vuelos.terminal')),
+            ],
+            options={
+                'verbose_name': 'Puerta',
+                'verbose_name_plural': 'Puertas',
+                'ordering': ['terminal', 'codigo'],
+                'unique_together': {('terminal', 'codigo')},
+            },
+        ),
+        migrations.CreateModel(
+            name='AsignacionTripulacion',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('fecha_asignacion', models.DateTimeField(auto_now_add=True)),
+                ('vuelo', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='tripulacion', to='vuelos.vuelo')),
+                ('tripulacion', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='asignaciones', to='vuelos.tripulacion')),
+            ],
+            options={
+                'verbose_name': 'Asignación de Tripulación',
+                'verbose_name_plural': 'Asignaciones de Tripulación',
+                'unique_together': {('vuelo', 'tripulacion')},
+            },
+        ),
+    ]
