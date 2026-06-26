@@ -1,3 +1,8 @@
 from django.contrib import admin
+from vuelos.models import Aeropuerto, Aeronave, Vuelo, Pasajero, Reserva
 
-# Register your models here.
+admin.site.register(Aeropuerto)
+admin.site.register(Aeronave)
+admin.site.register(Vuelo)
+admin.site.register(Pasajero)
+admin.site.register(Reserva)
