@@ -14,4 +14,3 @@ class EstadoVuelo(models.Model):
 
     def __str__(self):
         return f'{self.vuelo} — {self.estado} ({self.fecha:%d/%m/%Y %H:%M})'
-    

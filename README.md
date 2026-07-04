@@ -15,8 +15,8 @@ API REST desarrollada con Django y Django REST Framework para la gestión de vue
 Clonar el repositorio y crear el entorno virtual:
 
 ```bash
-git clone https://github.com/KarlaRosales13F/proyecto-integrador.git
-cd avianco
+git clone https://github.com/JossGuerrero/sistema-vuelos.git
+cd sistema-vuelos
 uv sync
 ```
 

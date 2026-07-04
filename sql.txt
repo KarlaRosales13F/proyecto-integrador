@@ -1,0 +1,25 @@
+# Acceder a la consola de PostgreSQL
+sudo -u postgres psql          # Linux / macOS
+# En Windows: abrir pgAdmin o usar la consola psql desde el menú de inicio
+
+# Dentro de la consola psql
+CREATE USER shopapi_user WITH PASSWORD 'sistema_vuelos';
+CREATE DATABASE sistema_vuelos OWNER sistema_vuelos;
+GRANT ALL PRIVILEGES ON DATABASE sistema_vuelos TO sistema_vuelos;
+\q
+
+uv run django-admin startproject config .
+uv run python manage.py startapp vuelos
+
+
+New-Item -ItemType Directory -Force vuelos\models, vuelos\serializers, vuelos\views, vuelos\tests
+
+$files = @(
+    "vuelos\models\__init__.py",
+    "vuelos\serializers\__init__.py",
+    "vuelos\views\__init__.py",
+    "vuelos\tests\__init__.py",
+    "vuelos\filters.py",
+    "vuelos\permissions.py"
+)
+$files | ForEach-Object { New-Item -ItemType File -Force $_ }

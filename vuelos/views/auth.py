@@ -14,30 +14,33 @@ class RegisterView(APIView):
     def post(self, request):
         serializer = RegisterSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        user = serializer.save()
+        user    = serializer.save()
         refresh = RefreshToken.for_user(user)
-        return Response(
-            {
-                "access": str(refresh.access_token),
-                "refresh": str(refresh),
-                "user_id": user.id,
-                "username": user.username,
-                "email": user.email,
-                "is_staff": user.is_staff,
-            },
-            status=status.HTTP_201_CREATED,
-        )
+        return Response({
+            'access':   str(refresh.access_token),
+            'refresh':  str(refresh),
+            'user_id':  user.id,
+            'username': user.username,
+            'email':    user.email,
+            'is_staff': user.is_staff,
+        }, status=status.HTTP_201_CREATED)
 
 
 class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        refresh_token = request.data.get("refresh")
+        refresh_token = request.data.get('refresh')
         if not refresh_token:
-            return Response({"error": "Se requiere el token de refresco."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {'error': 'Se requiere el token de refresco.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         try:
             RefreshToken(refresh_token).blacklist()
         except TokenError:
-            return Response({"error": "Token inválido o expirado."}, status=status.HTTP_400_BAD_REQUEST)
-        return Response({"mensaje": "Sesión cerrada correctamente."})
+            return Response(
+                {'error': 'Token inválido o expirado.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        return Response({'mensaje': 'Sesión cerrada correctamente.'})
